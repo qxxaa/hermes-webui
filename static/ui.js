@@ -1332,7 +1332,7 @@ function renderMd(raw){
       } else if(lang==='json'||lang==='yaml'){
         const rawCode=esc(code.replace(/\n$/,''));
         const blockId='tree-'+Math.random().toString(36).slice(2,10);
-        _preBlock_stash.push(`<div class="code-tree-wrap" data-raw="${rawCode.replace(/"/g,'&quot;')}" data-lang="${lang}" id="${blockId}">${h}<pre class="tree-raw-view"><code${langAttr}>${rawCode}</code></pre></div>`);
+        _preBlock_stash.push(`<div class="code-tree-wrap" data-raw="${rawCode.replace(/\n/g,'&#10;').replace(/"/g,'&quot;')}" data-lang="${lang}" id="${blockId}">${h}<pre class="tree-raw-view"><code${langAttr}>${rawCode}</code></pre></div>`);
       // CSV blocks → render as styled table
       } else if(lang==='csv'){
         const rows=code.replace(/\n$/,'').split('\n').filter(r=>r.trim());
@@ -3939,8 +3939,9 @@ function initTreeViews(){
       if(typeof jsyaml!=='undefined'){
         try{ parsed=jsyaml.load(rawText); }catch(e){ parseFailed=true; }
       }else{
-        // Trigger async load, leave as raw for now
-        parseFailed=true;
+        wrap.removeAttribute('data-tree-init');
+        _loadJsyamlThen(initTreeViews);
+        return;
       }
     }
     if(!parsed || typeof parsed!=='object'){
